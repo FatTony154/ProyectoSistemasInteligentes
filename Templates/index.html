@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simulacion Agente</title>
+    <style>
+        .mapa, .mapa_explorado {
+            display: grid;
+            grid-template-columns: repeat(10, 20px);
+            grid-gap: 1px;
+        }
+        .cell {
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            border: 1px solid #ccc;
+        }
+        .O { background-color: #3f3f3f; }
+        .F { background-color: rgb(255, 166, 0); color: #fff; }
+        .P { background-color: rgb(43, 255, 0); color: #fff; }
+        .A { background-color: rgb(0, 4, 255); color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>Simulacion Agente</h1>
+    <h2>Mapa Actual</h2>
+    <div class="mapa"></div>
+    <h2>Mapa Explorado por el Agente</h2>
+    <div class="mapa_explorado"></div>
+
+    <script>
+        function actualizarMapa(data) {
+            const mapaDiv = document.querySelector('.mapa');
+            const mapaExploradoDiv = document.querySelector('.mapa_explorado');
+            mapaDiv.innerHTML = '';
+            mapaExploradoDiv.innerHTML = '';
+
+            // Crear el mapa actual
+            for (let i = 0; i < data.mapa.length; i++) {
+                for (let j = 0; j < data.mapa[i].length; j++) {
+                    let cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.textContent = data.mapa[i][j];
+
+                    if (data.mapa[i][j] !== ' ') {
+                        cell.classList.add(data.mapa[i][j]);
+                    }
+                    mapaDiv.appendChild(cell);
+                }
+            }
+            
+            // Crear el mapa explorado
+            for (let i = 0; i < data.mapa_explorado.length; i++) {
+                for (let j = 0; j < data.mapa_explorado[i].length; j++) {
+                    let cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.textContent = data.mapa_explorado[i][j];
+                    
+                    if (data.mapa_explorado[i][j] !== '?' && data.mapa_explorado[i][j] !== ' ') {
+                        cell.classList.add(data.mapa_explorado[i][j]);
+                    }
+                    if (i === data.agente_pos[0] && j === data.agente_pos[1]) {
+                        cell.classList.add('A');
+                        cell.textContent = 'A';
+                    }
+                    mapaExploradoDiv.appendChild(cell);
+                }
+            }
+        }
+
+        function obtenerDatosMapa() {
+            fetch('/get_map_data')
+                .then(response => response.json())
+                .then(data => {
+                    actualizarMapa(data);
+                    setTimeout(obtenerDatosMapa, 100);  // Intervalo reducido a 100 milisegundos
+                });
+        }
+
+        obtenerDatosMapa();
+    </script>
+</body>
+</html>
