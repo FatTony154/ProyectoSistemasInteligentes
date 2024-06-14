@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simulacion Agente</title>
+    <title>Simulación Agente</title>
     <style>
         .mapa, .mapa_explorado {
             display: grid;
@@ -22,20 +22,20 @@
     </style>
 </head>
 <body>
-    <h1>Simulacion Agente</h1>
+    <h1>Simulación Agente</h1>
     <h2>Mapa Actual</h2>
     <div class="mapa"></div>
-    <h2>Mapa Explorado por el Agente</h2>
-    <div class="mapa_explorado"></div>
+    <h2>Mapa Explorador por el Agente</h2>
+    <div class="mapa_explorado" id="agentes_explorados"></div>
 
     <script>
         function actualizarMapa(data) {
             const mapaDiv = document.querySelector('.mapa');
-            const mapaExploradoDiv = document.querySelector('.mapa_explorado');
+            const agentesExploradosDiv = document.getElementById('agentes_explorados');
             mapaDiv.innerHTML = '';
-            mapaExploradoDiv.innerHTML = '';
+            agentesExploradosDiv.innerHTML = '';
 
-            // Crear el mapa actual
+            // Crear mapa actual
             for (let i = 0; i < data.mapa.length; i++) {
                 for (let j = 0; j < data.mapa[i].length; j++) {
                     let cell = document.createElement('div');
@@ -48,23 +48,47 @@
                     mapaDiv.appendChild(cell);
                 }
             }
-            
-            // Crear el mapa explorado
-            for (let i = 0; i < data.mapa_explorado.length; i++) {
-                for (let j = 0; j < data.mapa_explorado[i].length; j++) {
+
+            // Crear Mapa explorado de Agentes combinados
+            let mapaExploradoCombinado = Array.from({ length: 10 }, () => Array(10).fill('?'));
+
+            data.agentes.forEach(agente => {
+                for (let i = 0; i < agente.mapa_explorado.length; i++) {
+                    for (let j = 0; j < agente.mapa_explorado[i].length; j++) {
+                        if (agente.mapa_explorado[i][j] !== '?' && agente.mapa_explorado[i][j] !== 'A') {
+                            mapaExploradoCombinado[i][j] = agente.mapa_explorado[i][j];
+                        }
+                    }
+                }
+            });
+
+            for (let i = 0; i < mapaExploradoCombinado.length; i++) {
+                for (let j = 0; j < mapaExploradoCombinado[i].length; j++) {
                     let cell = document.createElement('div');
                     cell.classList.add('cell');
-                    cell.textContent = data.mapa_explorado[i][j];
-                    
-                    if (data.mapa_explorado[i][j] !== '?' && data.mapa_explorado[i][j] !== ' ') {
-                        cell.classList.add(data.mapa_explorado[i][j]);
+                    cell.textContent = mapaExploradoCombinado[i][j];
+
+                    if (mapaExploradoCombinado[i][j] !== '?' && mapaExploradoCombinado[i][j] !== ' ') {
+                        cell.classList.add(mapaExploradoCombinado[i][j]);
                     }
-                    if (i === data.agente_pos[0] && j === data.agente_pos[1]) {
-                        cell.classList.add('A');
-                        cell.textContent = 'A';
-                    }
-                    mapaExploradoDiv.appendChild(cell);
+                    agentesExploradosDiv.appendChild(cell);
                 }
+            }
+
+            // Posiciones de los agentes
+            data.agentes.forEach(agente => {
+                let cellIndex = agente.agente_pos[0] * 10 + agente.agente_pos[1];
+                if (cellIndex >= 0 && cellIndex < agentesExploradosDiv.children.length) {
+                    let cell = agentesExploradosDiv.children[cellIndex];
+                    cell.classList.add('A');
+                    cell.textContent = 'A';
+                }
+            });
+
+            if (data.juego_terminado) {
+                alert("¡Se ha detenido el incendio!");
+            } else {
+                setTimeout(obtenerDatosMapa, 200);
             }
         }
 
@@ -73,7 +97,6 @@
                 .then(response => response.json())
                 .then(data => {
                     actualizarMapa(data);
-                    setTimeout(obtenerDatosMapa, 100);  // Intervalo reducido a 100 milisegundos
                 });
         }
 
