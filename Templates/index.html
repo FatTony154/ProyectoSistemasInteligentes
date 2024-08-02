@@ -19,6 +19,7 @@
         .F { background-color: rgb(255, 166, 0); color: #fff; }
         .P { background-color: rgb(43, 255, 0); color: #fff; }
         .A { background-color: rgb(0, 4, 255); color: #fff; }
+        .B { background-color: rgb(0, 255, 255); color: #fff; } /* Base color */
     </style>
 </head>
 <body>
@@ -27,13 +28,17 @@
     <div class="mapa"></div>
     <h2>Mapa Explorador por el Agente</h2>
     <div class="mapa_explorado" id="agentes_explorados"></div>
+    <h2>Personas Encontradas</h2>
+    <div id="personas-encontradas"></div>
 
     <script>
         function actualizarMapa(data) {
             const mapaDiv = document.querySelector('.mapa');
             const agentesExploradosDiv = document.getElementById('agentes_explorados');
+            const personasEncontradasDiv = document.getElementById('personas-encontradas');
             mapaDiv.innerHTML = '';
             agentesExploradosDiv.innerHTML = '';
+            personasEncontradasDiv.innerHTML = '';
 
             // Crear mapa actual
             for (let i = 0; i < data.mapa.length; i++) {
@@ -81,14 +86,23 @@
                 if (cellIndex >= 0 && cellIndex < agentesExploradosDiv.children.length) {
                     let cell = agentesExploradosDiv.children[cellIndex];
                     cell.classList.add('A');
+                    cell.style.backgroundColor = agente.color;
                     cell.textContent = 'A';
                 }
+            });
+
+            data.agentes.forEach(agente => {
+                agente.personas_encontradas.forEach(persona => {
+                    const personaDiv = document.createElement('div');
+                    personaDiv.textContent = `Persona encontrada en (${persona[0]}, ${persona[1]})`;
+                    personasEncontradasDiv.appendChild(personaDiv);
+                });
             });
 
             if (data.juego_terminado) {
                 alert("¡Se ha detenido el incendio!");
             } else {
-                setTimeout(obtenerDatosMapa, 100);
+                setTimeout(obtenerDatosMapa, 200);
             }
         }
 
