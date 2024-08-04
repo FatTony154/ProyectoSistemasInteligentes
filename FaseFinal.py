@@ -28,7 +28,7 @@ def get_map_data():
         for agente in agentes:
             agente.compartir_conocimiento()
 
-        juego_terminado = not mapa.fuegos and not mapa.personas
+        juego_terminado = not mapa.fuegos and not mapa.personas and all(agente.x == 0 and agente.y == 0 for agente in agentes)
 
         if juego_terminado:
             print("El juego ha terminado")
