@@ -173,13 +173,39 @@ class Agente:
             print(f"Movimiento no válido: ({x}, {y}) es un obstáculo.")
             return False
         return True
+    
+    def mover_a_celda_no_explorada(self):
+        celda_no_explorada = self.buscar_celda_no_explorada()
+        if celda_no_explorada:
+            self.camino_de_vuelta = self.a_star((self.x, self.y), celda_no_explorada)
+            self.regresando = True
+        else:
+            print(f"Agente {self.id} no encontró celdas no exploradas disponibles")
+            self.backtrack()
+            
+    def mover_aleatorio(self):
+        celdas_no_exploradas = [(x, y) for x in range(self.mapa.ancho) for y in range(self.mapa.alto) if self.mapa_explorado[x][y] == ' ']
+        if celdas_no_exploradas:
+            celda_aleatoria = random.choice(celdas_no_exploradas)
+            self.camino_de_vuelta = self.a_star((self.x, self.y), celda_aleatoria)
+            self.regresando = True
+                
+    def backtrack(self):
+        celdas_previamente_exploradas = [(x, y) for x in range(self.mapa.ancho) for y in range(self.mapa.alto) if self.mapa_explorado[x][y] != ' ' and (x, y) not in self.celdas_visitadas]
+        if celdas_previamente_exploradas:
+            celda_backtrack = random.choice(celdas_previamente_exploradas)
+            self.camino_de_vuelta = self.a_star((self.x, self.y), celda_backtrack)
+            self.regresando = True
+        else:
+            print(f"Agente {self.id} no encontró celdas previamente exploradas")
+            self.mover_aleatorio()
 
 
     def explorar(self):
         global mapa_explorado_global
         celda_actual = self.mapa.mapa[self.x][self.y]
         self.mapa_explorado[self.x][self.y] = celda_actual
-        mapa_explorado_global[self.x][self.y] = celda_actual
+        mapa_explorado_global[self.x][self.y] = self.mapa_explorado[self.x][self.y]
 
         if celda_actual == 'F':
             self.apagar()
@@ -194,12 +220,12 @@ class Agente:
             print(f"Agente {self.id} no encontró más fuegos ni personas, regresando")
             self.volver_a_base()
         else:
-            # Buscar una celda no explorada como nuevo objetivo
-            objetivo = self.buscar_celda_no_explorada()
-            if objetivo:
-                self.mover_a_nueva_celda(objetivo)
+            if self.fuego_actual and self.fuego_actual in self.mapa.fuegos:
+                if self.x == self.origen[0] and self.y == self.origen[1]:
+                    self.camino_de_vuelta = self.a_star(self.origen, self.fuego_actual)
+                    self.regresando = True
             else:
-                print(f"Agente {self.id} no encontró celdas no exploradas disponibles")
+                self.mover_a_celda_no_explorada()    
             
     def mover_a_nueva_celda(self, objetivo):
         print(f"Agente {self.id} moviéndose hacia una nueva celda no explorada en {objetivo}")
